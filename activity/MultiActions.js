@@ -35,10 +35,13 @@ module.exports = class MultiActions {
             this.checkMultiActions(message.guild.id, message.author.id);
         });
 
-        this.client.on('guildMemberUpdate', (oldMember, newMember) => {
+        this.client.on('guildMemberUpdate', async (oldMember, newMember) => {
             if (oldMember.user.bot) return;
 
             if (oldMember.nickname !== newMember.nickname) {
+                const result = await this.client.badname.checkName(newMember.displayName);
+                if (result) return;
+
                 this.addUserEvent(newMember.id, 'nicknameUpdate');
                 this.checkMultiActions(newMember.guild.id, newMember.id);
             }
@@ -49,7 +52,7 @@ module.exports = class MultiActions {
             }
         });
 
-        this.client.on('userUpdate', (oldUser, newUser) => {
+        this.client.on('userUpdate', async (oldUser, newUser) => {
             if (newUser.bot) return;
 
             if (oldUser.avatar !== newUser.avatar) {
@@ -61,6 +64,9 @@ module.exports = class MultiActions {
             }
 
             if (oldUser.username !== newUser.username) {
+                const result = await this.client.badname.checkName(newUser.username);
+                if (result) return;
+
                 this.addUserEvent(newUser.id, 'usernameUpdate');
                 const firstGuild = this.client.guilds.cache.find((g) => g.members.cache.has(newUser.id));
                 if (firstGuild) {
@@ -98,7 +104,7 @@ module.exports = class MultiActions {
             ['nicknameUpdate', 'avatarUpdate', 'usernameUpdate', 'rolesUpdate'].includes(e.type)
         ).length;
 
-        // メッセージイベントの数
+        // メッセージイベントの数 
         const messageEvents = events.filter(e => e.type === 'message').length;
 
         let reason = '';
