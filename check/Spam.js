@@ -1,4 +1,3 @@
-
 module.exports = class Antispam {
     constructor(client) {
         this.client = client;
@@ -7,7 +6,7 @@ module.exports = class Antispam {
         this.typingMap = new Map();
 
         this.maxMessagesWithinTime = 5;
-        this.timeFrame = 4000;
+        this.timeFrame = 3000;
         this.timeoutValue = 10 * 60 * 1000;
 
         this.duplicateLimit = 3;
@@ -26,7 +25,7 @@ module.exports = class Antispam {
 
 
     setupMessageListener() {
-        this.client.on('messageCreate', (message) => {
+        this.client.on('messageCreate', async (message) => {
             if (message.author.bot) return;
 
             const userId = message.author.id;
@@ -48,6 +47,13 @@ module.exports = class Antispam {
             userData.messages = userData.messages.filter((t) => t > now - this.timeFrame);
 
             if (userData.messages.length >= this.maxMessagesWithinTime) {
+                const messages = await message.channel.messages.fetch({limit: 10});
+                const userMessages = messages.filter(m => m.author.id === userId);
+                try {
+                    await Promise.all(userMessages.map(m => m.delete()));
+                } catch (err) {
+                    console.error('Failed to delete messages:', err);
+                }
                 this.applyTimeout(guildId, userId, 'Excessive posts detected in a short period');
                 return;
             }
@@ -56,6 +62,13 @@ module.exports = class Antispam {
             if (userData.lastMessages.includes(currentContent)) {
                 userData.warnCount++;
                 if (userData.warnCount >= this.duplicateLimit) {
+                    const messages = await message.channel.messages.fetch({limit: 10});
+                    const userMessages = messages.filter(m => m.author.id === userId);
+                    try {
+                        await Promise.all(userMessages.map(m => m.delete()));
+                    } catch (err) {
+                        console.error('Failed to delete messages:', err);
+                    }
                     this.applyTimeout(guildId, userId, 'Multiple identical or similar messages');
                     return;
                 }
@@ -70,6 +83,13 @@ module.exports = class Antispam {
 
             const zalgoRegex = /[\u0300-\u036f\u0489]+/;
             if (zalgoRegex.test(currentContent)) {
+                const messages = await message.channel.messages.fetch({limit: 10});
+                const userMessages = messages.filter(m => m.author.id === userId);
+                try {
+                    await Promise.all(userMessages.map(m => m.delete()));
+                } catch (err) {
+                    console.error('Failed to delete messages:', err);
+                }
                 this.applyTimeout(guildId, userId, 'Zalgo');
                 return;
             }
@@ -78,12 +98,26 @@ module.exports = class Antispam {
             const emojiRegex = /<a?:.+?:\d+>|[\u{1F300}-\u{1FAFF}]/u;
             const matchAllEmojis = currentContent.match(new RegExp(emojiRegex, 'gu'));
             if (matchAllEmojis && matchAllEmojis.length > 10) {
+                const messages = await message.channel.messages.fetch({limit: 10});
+                const userMessages = messages.filter(m => m.author.id === userId);
+                try {
+                    await Promise.all(userMessages.map(m => m.delete()));
+                } catch (err) {
+                    console.error('Failed to delete messages:', err);
+                }
                 this.applyTimeout(guildId, userId, 'Emoji Spam');
                 return;
             }
 
             const randomRegex = /^[A-Za-z0-9]{30,}$/;
             if (randomRegex.test(currentContent)) {
+                const messages = await message.channel.messages.fetch({limit: 10});
+                const userMessages = messages.filter(m => m.author.id === userId);
+                try {
+                    await Promise.all(userMessages.map(m => m.delete()));
+                } catch (err) {
+                    console.error('Failed to delete messages:', err);
+                }
                 this.applyTimeout(guildId, userId, 'Random String');
                 return;
             }
@@ -92,6 +126,13 @@ module.exports = class Antispam {
             if (typingStartTime && now - typingStartTime < 300) {
                 userData.warnCount++;
                 if (userData.warnCount >= 2) {
+                    const messages = await message.channel.messages.fetch({limit: 10});
+                    const userMessages = messages.filter(m => m.author.id === userId);
+                    try {
+                        await Promise.all(userMessages.map(m => m.delete()));
+                    } catch (err) {
+                        console.error('Failed to delete messages:', err);
+                    }
                     this.applyTimeout(guildId, userId, 'Copy and paste spam');
                     return;
                 }
