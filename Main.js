@@ -5,7 +5,7 @@ const Notifications = require('./utils/Notification.js');
 const Badwords = require('./check/Badwords.js');
 const MultiActions = require('./activity/MultiActions.js');
 const VirusCheck = require('./check/VirusCheck.js');
-const VerifyPanel = require('./verifypanel/CaptchaPanel.js');  // <-- 自動投稿用＆イベント登録用
+const VerifyPanel = require('./verifypanel/CaptchaPanel.js');
 const UrlCheck = require('./check/UrlCheck.js');
 const Reaction = require('./check/Reaction.js');
 
@@ -23,7 +23,6 @@ const client = new Client({
     ]
 });
 
-// 他の機能を登録
 client.doubleSends = new DoubleSends(client);
 client.antispam = new Antispam(client);
 client.badwords = new Badwords(client);
