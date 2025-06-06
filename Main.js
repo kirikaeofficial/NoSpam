@@ -8,7 +8,7 @@ const VirusCheck = require('./check/VirusCheck.js');
 const VerifyPanel = require('./verifypanel/CaptchaPanel.js');
 const UrlCheck = require('./check/UrlCheck.js');
 const Reaction = require('./check/Reaction.js');
-
+const BadName = require('./user/BadName.js');
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -31,10 +31,11 @@ client.urlcheck = new UrlCheck(client);
 client.reactioncheck = new Reaction(client);
 client.viruscheck = new VirusCheck(client);
 client.multiActions = new MultiActions(client);
+client.badname = new BadName(client);
 
 VerifyPanel.registerEvents(client);
 
-client.login('Ur bot token here').catch(console.error);
+client.login('').catch(console.error);
 
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}`);
